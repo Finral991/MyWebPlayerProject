@@ -1,0 +1,93 @@
+:root {
+  --md-sys-color-background: #101418;
+  --md-sys-color-on-background: #e0e2e8;
+
+  --md-sys-color-surface: #14181d;
+  --md-sys-color-surface-container-low: #181d23;
+  --md-sys-color-surface-container: #1d2229;
+  --md-sys-color-surface-container-high: #272d36;
+  --md-sys-color-surface-container-highest: #323944;
+
+  --md-sys-color-primary: #a8c7fa;
+  --md-sys-color-on-primary: #062e6f;
+  --md-sys-color-primary-container: #244375;
+  --md-sys-color-on-primary-container: #d3e3fd;
+
+  --md-sys-color-secondary-container: #33435a;
+  --md-sys-color-on-secondary-container: #d7e3f8;
+
+  --md-sys-color-tertiary: #88d6a8;
+  --md-sys-color-tertiary-container: #1d4932;
+  --md-sys-color-on-tertiary-container: #b7f2ce;
+
+  --md-sys-color-error: #f2b8b5;
+  --md-sys-color-on-error: #601410;
+  --md-sys-color-error-container: #5c1f1e;
+  --md-sys-color-on-error-container: #f9dedc;
+
+  --md-sys-color-on-surface-variant: #c2c7cf;
+  --md-sys-color-outline: #8c9199;
+  --md-sys-color-outline-variant: #42474e;
+
+  --radius-xl: 28px;
+  --radius-lg: 20px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --radius-full: 999px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-sys-color-surface-container-highest) transparent;
+}
+
+body {
+  font-family: "Google Sans", "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+  min-height: 100vh;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+.svg-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 6px 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-surface-container-highest);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background-color 0.15s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-sys-color-primary);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}

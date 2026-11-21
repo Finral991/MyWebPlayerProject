@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Локальний відеоплеєр • Material You</title>
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+  <!-- Стартове модальне вікно вибору / перетягування теки -->
+  <div class="picker-overlay" id="pickerOverlay" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+    <div class="picker-card" id="dropZone">
+      <div class="picker-icon" aria-hidden="true">📁</div>
+      <h1 id="pickerTitle">Обери теку з відео</h1>
+      <p>
+        Натисни кнопку нижче або перетягни теку сюди. Підтримуються вкладені теки та файли
+        <code>.mp4</code>, <code>.webm</code>, <code>.m4v</code>.
+      </p>
+
+      <div class="picker-actions">
+        <button type="button" class="btn btn-primary" id="pickDirBtn">Обрати теку</button>
+        <button type="button" class="btn btn-tonal is-hidden" id="backToPlayerBtn">
+          Назад до поточної теки
+        </button>
+      </div>
+
+      <!-- Історія нещодавно відкритих тек -->
+      <div class="history-block is-hidden" id="historyBlock">
+        <div class="history-header">
+          <span>Нещодавні теки</span>
+          <button type="button" class="link-btn" id="clearHistoryBtn">Очистити</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+
+      <div class="picker-hint" id="pickerHint">
+        Працює у Chrome / Edge / Brave через File System Access API
+      </div>
+    </div>
+  </div>
+
+  <!-- Основний інтерфейс плеєра -->
+  <div class="app-shell is-hidden" id="appShell">
+    <main class="player-area">
+      <header class="topbar">
+        <div class="title-group">
+          <div class="folder-heading" id="folderTitle">Тека не обрана</div>
+          <div class="episode-badge-row" id="episodeHighlightRow">
+            <span class="episode-pill" id="episodeHighlight">Обери серію зі списку</span>
+            <span class="meta" id="folderInfo"></span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-tonal" id="changeDirBtn">Змінити теку</button>
+      </header>
+
+      <div class="player-stage" id="playerStage">
+        <div class="video-wrapper" id="videoWrapper">
+          <video id="videoPlayer" playsinline></video>
+
+          <!-- Індикатори накопиченої перемотки по краях екрану -->
+          <div class="seek-edge-indicator seek-edge-left" id="seekEdgeLeft" aria-hidden="true">
+            <span class="seek-edge-arrow">«</span>
+            <span class="seek-edge-value" id="seekEdgeLeftVal">-10с</span>
+          </div>
+          <div class="seek-edge-indicator seek-edge-right" id="seekEdgeRight" aria-hidden="true">
+            <span class="seek-edge-value" id="seekEdgeRightVal">+10с</span>
+            <span class="seek-edge-arrow">»</span>
+          </div>
+
+          <!-- Віконечко при паузі лише у повноекранному режимі: інфо + попередня/наступна серія -->
+          <div class="pause-info-card" id="pauseInfoCard" aria-live="polite">
+            <div class="pause-folder-label" id="pauseFolderName">Тека не обрана</div>
+            <div class="pause-episode-badge" id="pauseEpisodeBadge">Обери серію зі списку</div>
+            <div class="pause-nav-actions">
+              <button type="button" class="btn btn-tonal btn-sm" id="prevEpisodeBtn" disabled>
+                ← Попередня
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" id="nextEpisodeBtn" disabled>
+                Наступна →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Кастомні контролери Material You в один ряд -->
+        <div class="custom-controls" id="customControls">
+          <div class="controls-left">
+            <button
+              type="button"
+              class="ctrl-play-btn"
+              id="playPauseBtn"
+              title="Відтворити / Пауза (Space)"
+              aria-label="Відтворити або поставити на паузу"
+            >
+              <svg class="svg-icon play-svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor" />
+              </svg>
+              <svg class="svg-icon pause-svg is-hidden" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor" />
+                <rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor" />
+              </svg>
+            </button>
+
+            <!-- Перемотка вліво / вправо + випадаюче меню кроку (5 / 10 / 20 / 30 с) -->
+            <div class="jump-group" id="jumpGroup">
+              <button type="button" class="ctrl-btn jump-btn" id="jumpLeftBtn" title="Перемотати назад" aria-label="Перемотати назад">
+                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                </svg>
+              </button>
+              <button type="button" class="ctrl-btn jump-btn" id="jumpRightBtn" title="Перемотати вперед" aria-label="Перемотати вперед">
+                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                </svg>
+              </button>
+
+              <div class="step-menu-wrap">
+                <button
+                  type="button"
+                  class="step-chip"
+                  id="stepMenuBtn"
+                  aria-haspopup="menu"
+                  aria-expanded="false"
+                  title="Обрати крок перемотки"
+                >
+                  10с ▾
+                </button>
+                <div class="step-menu is-hidden" id="stepMenu" role="menu">
+                  <button type="button" class="step-option" data-step="5" role="menuitem">5 секунд</button>
+                  <button type="button" class="step-option is-selected" data-step="10" role="menuitem">10 секунд</button>
+                  <button type="button" class="step-option" data-step="20" role="menuitem">20 секунд</button>
+                  <button type="button" class="step-option" data-step="30" role="menuitem">30 секунд</button>
+                </div>
+              </div>
+            </div>
+
+            <span class="time-readout" id="timeReadout">00:00 / 00:00</span>
+          </div>
+
+          <div class="seek-row">
+            <div
+              class="m3-slider"
+              id="seekSlider"
+              role="slider"
+              tabindex="0"
+              aria-label="Позиція відео"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+            >
+              <div class="m3-slider-track">
+                <div class="m3-slider-fill" id="seekFill"></div>
+                <div class="m3-slider-target" id="seekTargetMarker"></div>
+              </div>
+              <div class="m3-slider-thumb" id="seekThumb"></div>
+              <div class="seek-tooltip" id="seekTooltip">00:00</div>
+            </div>
+          </div>
+
+          <div class="controls-right">
+            <div class="volume-control" id="volumeControl">
+              <button type="button" class="ctrl-btn" id="muteBtn" title="Звук (M / Ь)" aria-label="Звук">
+                <svg class="svg-icon vol-high-svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4zm11.5 2.5a3.5 3.5 0 00-2-3.16v6.32a3.5 3.5 0 002-3.16zm2.8 0a6.3 6.3 0 01-4.8 6.12v-1.85a4.5 4.5 0 000-8.54V6.08A6.3 6.3 0 0118.3 12z" fill="currentColor" />
+                </svg>
+                <svg class="svg-icon vol-muted-svg is-hidden" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4zm11.5 0l4 4m0-4l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                </svg>
+              </button>
+              <div class="volume-drawer" id="volumeDrawer">
+                <div
+                  class="m3-slider volume-slider"
+                  id="volumeSlider"
+                  role="slider"
+                  tabindex="0"
+                  aria-label="Гучність"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="100"
+                >
+                  <div class="m3-slider-track">
+                    <div class="m3-slider-fill" id="volumeFill"></div>
+                  </div>
+                  <div class="m3-slider-thumb" id="volumeThumb"></div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="ctrl-btn fs-btn"
+              id="fullscreenBtn"
+              title="Повний екран (F / А)"
+              aria-label="Повний екран"
+            >
+              <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  fill="none"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <input
+          type="search"
+          class="search-input"
+          id="searchInput"
+          placeholder="Пошук за назвою або текою..."
+          autocomplete="off"
+        />
+
+        <div class="filter-row">
+          <div class="filter-tabs" role="tablist" aria-label="Фільтр перегляду">
+            <button type="button" class="chip is-active" data-filter="all" id="tabAll">
+              Усі <span class="chip-count" id="countAll">0</span>
+            </button>
+            <button type="button" class="chip" data-filter="unwatched" id="tabUnwatched">
+              Нові <span class="chip-count" id="countUnwatched">0</span>
+            </button>
+            <button type="button" class="chip" data-filter="watched" id="tabWatched">
+              Переглянуті <span class="chip-count" id="countWatched">0</span>
+            </button>
+          </div>
+
+          <div class="scroll-arrows" aria-label="Швидка прокрутка списку">
+            <button type="button" class="scroll-btn" id="scrollListUpBtn" title="Прокрутити список вгору">↑</button>
+            <button type="button" class="scroll-btn" id="scrollListDownBtn" title="Прокрутити список вниз">↓</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="playlist" id="playlist"></div>
+    </aside>
+  </div>
+
+  <!-- Кастомне Material You вікно помилок -->
+  <div class="error-overlay is-hidden" id="errorOverlay" role="alertdialog" aria-modal="true" aria-labelledby="errorTitle" aria-describedby="errorMessage">
+    <div class="error-card">
+      <div class="error-icon" aria-hidden="true">!</div>
+      <h2 id="errorTitle">Помилка</h2>
+      <p id="errorMessage">Сталася непередбачена помилка.</p>
+      <div class="error-details is-hidden" id="errorDetails"></div>
+      <div class="error-actions">
+        <button type="button" class="btn btn-primary" id="errorCloseBtn">Зрозуміло</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
