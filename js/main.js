@@ -10,18 +10,20 @@ import {
   selectFocusedEpisode,
 } from './playlist.js';
 import {
+  closeSettingsModal,
   closeStepMenu,
   exitFullscreenIfActive,
   initPlayerEvents,
+  isSettingsModalOpen,
   isStepMenuOpen,
   queueJumpBySeconds,
   resetPendingSeek,
   selectVideo,
   syncEpisodeNavButtons,
   toggleFullscreen,
+  toggleMute,
   togglePlay,
   updateHeaderForVideo,
-  updateVolumeUI,
   videoPlayer,
   volumeControl,
 } from './player.js';
@@ -51,6 +53,7 @@ function syncBackButtonVisibility() {
 async function showPicker() {
   flushProgressToStorage();
   resetPendingSeek();
+  closeSettingsModal();
   videoPlayer.pause();
   closeStepMenu();
   volumeControl.classList.remove('is-open');
@@ -260,6 +263,12 @@ document.addEventListener('keydown', (e) => {
       return;
     }
 
+    if (isSettingsModalOpen()) {
+      e.preventDefault();
+      closeSettingsModal();
+      return;
+    }
+
     if (isStepMenuOpen()) {
       e.preventDefault();
       closeStepMenu();
@@ -285,7 +294,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
-  if (!pickerOverlay.classList.contains('is-hidden')) return;
+  if (!pickerOverlay.classList.contains('is-hidden') || isSettingsModalOpen()) return;
 
   if (isTyping) {
     if (e.key === 'Enter' && document.activeElement === searchInput && state.visibleListItems.length > 0) {
@@ -296,6 +305,8 @@ document.addEventListener('keydown', (e) => {
     }
     return;
   }
+
+  const lowerKey = e.key.toLowerCase();
 
   if (e.code === 'Space') {
     e.preventDefault();
@@ -317,11 +328,10 @@ document.addEventListener('keydown', (e) => {
   } else if (e.key === 'ArrowLeft') {
     e.preventDefault();
     queueJumpBySeconds(-state.jumpStepSec);
-  } else if (e.code === 'KeyM') {
+  } else if (e.code === 'KeyM' || lowerKey === 'm' || lowerKey === 'ь') {
     e.preventDefault();
-    videoPlayer.muted = !videoPlayer.muted;
-    updateVolumeUI();
-  } else if (e.code === 'KeyF') {
+    toggleMute();
+  } else if (e.code === 'KeyF' || lowerKey === 'f' || lowerKey === 'а') {
     e.preventDefault();
     toggleFullscreen();
   }

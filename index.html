@@ -52,12 +52,47 @@
             <span class="meta" id="folderInfo"></span>
           </div>
         </div>
-        <button type="button" class="btn btn-tonal" id="changeDirBtn">Змінити теку</button>
+
+        <div class="topbar-actions">
+          <button
+            type="button"
+            class="ctrl-btn settings-trigger-btn"
+            id="openSettingsBtn"
+            title="Налаштування повноекранного плеєра та гарячі клавіші"
+            aria-label="Налаштування плеєра"
+          >
+            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm8.94 2.55l-1.69-.58a7.1 7.1 0 00-.67-1.62l.78-1.59a1 1 0 00-.19-1.15l-1.41-1.41a1 1 0 00-1.15-.19l-1.59.78a7.1 7.1 0 00-1.62-.67l-.58-1.69A1 1 0 0012.64 2h-1.28a1 1 0 00-.95.69l-.58 1.69a7.1 7.1 0 00-1.62.67l-1.59-.78a1 1 0 00-1.15.19L4.76 6.04a1 1 0 00-.19 1.15l.78 1.59a7.1 7.1 0 00-.67 1.62l-1.69.58A1 1 0 002 11.93v1.28a1 1 0 00.69.95l1.69.58c.18.57.4 1.11.67 1.62l-.78 1.59a1 1 0 00.19 1.15l1.41 1.41a1 1 0 001.15.19l1.59-.78c.51.27 1.05.49 1.62.67l.58 1.69a1 1 0 00.95.69h1.28a1 1 0 00.95-.69l.58-1.69c.57-.18 1.11-.4 1.62-.67l1.59.78a1 1 0 001.15-.19l1.41-1.41a1 1 0 00.19-1.15l-.78-1.59c.27-.51.49-1.05.67-1.62l1.69-.58a1 1 0 00.69-.95v-1.28a1 1 0 00-.69-.95z"
+                stroke="currentColor"
+                stroke-width="1.6"
+                fill="none"
+              />
+            </svg>
+          </button>
+          <button type="button" class="btn btn-tonal" id="changeDirBtn">Змінити теку</button>
+        </div>
       </header>
 
-      <div class="player-stage" id="playerStage">
+      <div class="player-stage dock-bottom" id="playerStage">
         <div class="video-wrapper" id="videoWrapper">
           <video id="videoPlayer" playsinline></video>
+
+          <!-- Велика оптично відцентрована кнопка Play посередині відео -->
+          <button
+            type="button"
+            class="center-play-btn is-visible"
+            id="centerPlayBtn"
+            title="Відтворити"
+            aria-label="Відтворити відео"
+          >
+            <svg class="svg-icon center-play-svg" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M8.5 5.65c0-.95 1.03-1.54 1.85-1.06l9.65 5.6c.81.47.81 1.65 0 2.12l-9.65 5.6c-.82.48-1.85-.11-1.85-1.06V5.65z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
 
           <!-- Індикатори накопиченої перемотки по краях екрану -->
           <div class="seek-edge-indicator seek-edge-left" id="seekEdgeLeft" aria-hidden="true">
@@ -69,8 +104,8 @@
             <span class="seek-edge-arrow">»</span>
           </div>
 
-          <!-- Віконечко при паузі лише у повноекранному режимі: інфо + попередня/наступна серія -->
-          <div class="pause-info-card" id="pauseInfoCard" aria-live="polite">
+          <!-- Острівець інформації під час паузи у повноекранному режимі -->
+          <div class="pause-info-card pause-pos-top-left" id="pauseInfoCard" aria-live="polite">
             <div class="pause-folder-label" id="pauseFolderName">Тека не обрана</div>
             <div class="pause-episode-badge" id="pauseEpisodeBadge">Обери серію зі списку</div>
             <div class="pause-nav-actions">
@@ -84,7 +119,7 @@
           </div>
         </div>
 
-        <!-- Кастомні контролери Material You в один ряд -->
+        <!-- Кастомні контролери Material You -->
         <div class="custom-controls" id="customControls">
           <div class="controls-left">
             <button
@@ -95,7 +130,10 @@
               aria-label="Відтворити або поставити на паузу"
             >
               <svg class="svg-icon play-svg" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor" />
+                <path
+                  d="M8.5 5.65c0-.95 1.03-1.54 1.85-1.06l9.65 5.6c.81.47.81 1.65 0 2.12l-9.65 5.6c-.82.48-1.85-.11-1.85-1.06V5.65z"
+                  fill="currentColor"
+                />
               </svg>
               <svg class="svg-icon pause-svg is-hidden" viewBox="0 0 24 24" aria-hidden="true">
                 <rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor" />
@@ -139,7 +177,7 @@
             <span class="time-readout" id="timeReadout">00:00 / 00:00</span>
           </div>
 
-          <div class="seek-row">
+          <div class="seek-row" id="seekRow">
             <div
               class="m3-slider"
               id="seekSlider"
@@ -243,6 +281,109 @@
 
       <div class="playlist" id="playlist"></div>
     </aside>
+  </div>
+
+  <!-- Модальне вікно налаштувань повноекранного режиму та довідника клавіш -->
+  <div class="settings-overlay is-hidden" id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-card">
+      <div class="settings-header">
+        <div>
+          <h2 id="settingsTitle">Налаштування повного екрану</h2>
+          <p class="settings-subtitle">Застосовується лише у повноекранному режимі</p>
+        </div>
+        <button type="button" class="icon-close-btn" id="settingsCloseBtn" aria-label="Закрити">✕</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Розташування панелі керування</div>
+        <div class="option-pills" data-setting="dock">
+          <button type="button" class="chip" data-value="bottom">Знизу</button>
+          <button type="button" class="chip" data-value="top">Зверху</button>
+          <button type="button" class="chip" data-value="left">Зліва</button>
+          <button type="button" class="chip" data-value="right">Справа</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Острівець інформації при паузі</div>
+        <div class="option-pills" data-setting="pausePos">
+          <button type="button" class="chip" data-value="top-left">Зверху зліва</button>
+          <button type="button" class="chip" data-value="top-right">Зверху справа</button>
+          <button type="button" class="chip" data-value="bottom-left">Знизу зліва</button>
+          <button type="button" class="chip" data-value="bottom-right">Знизу справа</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Елементи керування</div>
+        <label class="toggle-row">
+          <span>Прибрати часову шкалу (залишити лише таймер)</span>
+          <span class="m3-switch">
+            <input type="checkbox" id="toggleHideSeekBar" />
+            <span class="m3-switch-track">
+              <span class="m3-switch-thumb"></span>
+            </span>
+          </span>
+        </label>
+        <label class="toggle-row">
+          <span>Прибрати налаштування кроку перемотки</span>
+          <span class="m3-switch">
+            <input type="checkbox" id="toggleHideJumpControls" />
+            <span class="m3-switch-track">
+              <span class="m3-switch-thumb"></span>
+            </span>
+          </span>
+        </label>
+        <label class="toggle-row">
+          <span>Сховати керування гучністю</span>
+          <span class="m3-switch">
+            <input type="checkbox" id="toggleHideVolume" />
+            <span class="m3-switch-track">
+              <span class="m3-switch-thumb"></span>
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Гарячі клавіші</div>
+        <div class="shortcuts-grid">
+          <div class="shortcut-row">
+            <span>Відтворити / Пауза</span>
+            <kbd>Space</kbd>
+          </div>
+          <div class="shortcut-row">
+            <span>Перемотка назад / вперед</span>
+            <span><kbd>←</kbd> <kbd>→</kbd></span>
+          </div>
+          <div class="shortcut-row">
+            <span>Повний екран</span>
+            <span><kbd>F</kbd> / <kbd>А</kbd> або 2× клік</span>
+          </div>
+          <div class="shortcut-row">
+            <span>Вимкнути / увімкнути звук</span>
+            <span><kbd>M</kbd> / <kbd>Ь</kbd></span>
+          </div>
+          <div class="shortcut-row">
+            <span>Гортати список серій</span>
+            <span><kbd>↑</kbd> <kbd>↓</kbd></span>
+          </div>
+          <div class="shortcut-row">
+            <span>Обрати підсвічену серію</span>
+            <kbd>Enter</kbd>
+          </div>
+          <div class="shortcut-row">
+            <span>Вихід із повного екрану / меню</span>
+            <kbd>Esc</kbd>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button type="button" class="btn btn-tonal btn-sm" id="resetSettingsBtn">Скинути</button>
+        <button type="button" class="btn btn-primary btn-sm" id="settingsDoneBtn">Готово</button>
+      </div>
+    </div>
   </div>
 
   <!-- Кастомне Material You вікно помилок -->
